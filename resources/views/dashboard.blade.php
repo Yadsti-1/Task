@@ -9,8 +9,19 @@
         <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 text-gray-900 dark:text-gray-100">
-                    {{ __("You're logged in!") }}
-                </div>
+                    <h1 class="text-3xl text-purple-500">Bienvenido</h1> {{ __("You're logged in!") }} <br>
+                    @foreach ($tasks as $task)
+                        <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
+                            <div class="p-6 text-gray-900 dark:text-gray-100">
+                                <h1 class="text-3xl text-purple-500">{{ $task->name }}</h1>
+                                <p>{{ $task->description }}</p>
+                                <p>{{ $task->status }}</p>
+                                <p>{{ $task->created_at }}</p>
+                                <p>{{ $task->updated_at }}</p>
+                            </div>
+                        </div>
+                    @endforeach
+                    
             </div>
         </div>
     </div>

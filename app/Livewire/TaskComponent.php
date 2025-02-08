@@ -7,6 +7,7 @@ use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 
+
 class TaskComponent extends Component
 {
     public $tasks = [];
@@ -15,18 +16,27 @@ class TaskComponent extends Component
     public $id;
     public $miTarea = null;
     public $modal = false; // Define la variable para abrir y cerrar el modal donde se van a crear las tareas
-    public $users; // Define la variable para almacenar los usuarios
+    public $modalShare = false; // Define la variable para abrir y cerrar el modal donde
+    public $users = []; // Define la variable para almacenar los usuarios
+    public $user_id;
+    public $permission;
     public $isUpdating; // Define la variable para saber si se está actualizando o creando una tarea
-
-    public function getTasks()
-    {
-        return Task::where('user_id', Auth::id())->orderBy('id', 'desc')->get(); // Obtiene las tareas del usuario autenticado
-    }
-
     public function mount()
     {
         $this->tasks = $this->getTasks();
-        $this->users = User::where('id', '!=', Auth::user()->id)->get(); // Asigna las tareas del usuario autenticado a la variable tasks
+        $this->users = User::where('id', '!=', Auth::user()->id)->get();
+    }
+
+    public function renderAllTasks()
+    {
+        $this->tasks = $this->getTasks()->sortByDesc('id');
+    }
+    public function getTasks()
+    {
+        $user = Auth::user();
+        $misTareas = Task::where('user_id', $user->id)->get();
+        $compartidos = $user->sharedTasks;
+        return $misTareas->merge($compartidos)->unique('id');
     }
 
     public function render()
@@ -98,6 +108,33 @@ class TaskComponent extends Component
     public function deleteTask(Task $task)
     {
         $task->delete();
+        $this->tasks = $this->getTasks()->sortByDesc('id');
+    }
+
+    public function openShareModal(Task $task)
+    {
+        $this->miTarea = $task;
+        $this->modalShare = true;
+    }
+
+    public function closeShareModal()
+    {
+        $this->modalShare = false;
+    }
+
+    public function shareTask()
+    {
+        $task = Task::find($this->miTarea->id);
+        $user = User::find($this->user_id);
+        $user->sharedTasks()->attach($task->id, ['permission' => $this->permission]); // Attach the task to the user
+        $this->closeShareModal();
+        $this->tasks = $this->getTasks()->sortByDesc('id');
+    }
+
+    public function unshareTask(Task $task)
+    {
+        $user = User::find(Auth::user()->id);
+        $user->sharedTasks()->detach($task->id);
         $this->tasks = $this->getTasks()->sortByDesc('id');
     }
 }

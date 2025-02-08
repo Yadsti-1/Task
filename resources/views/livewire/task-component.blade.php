@@ -1,4 +1,4 @@
-<section class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg ">
+<section class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg" wire:poll = "renderAllTasks">
     <div class="container">
         <div class="flex flex-wrap -mx-4">
             <div class="w-full px-4">
@@ -88,20 +88,38 @@
                                                     bg-white
                                                     border-b border-r border-[#E8E8E8]
                                                     ">
-                                        <a href="javascript:void(0)" class="
-                                                        border border-primary
-                                                        py-2
-                                                        px-6
-                                                        text-primary
-                                                        inline-block
-                                                        rounded
-                                                        hover:bg-primary hover:text-blue
-                                                        ">
-                                            <button
-                                                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded" wire:click="openCreateModal({{ $task->id }})">Editar</button>
-                                            <button
-                                                class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded" wire:click="deleteTask({{ $task }})" wire:confirm="Are you sure you want to delete this task?" >Eliminar</button>
-                                        </a>
+                                                    @if ($task->pivot)
+                                                        <button class="bg-orange-500 hover:bg-orange-700 text-white font-bold py-2 px-2 rounded" wire:click="unshareTask({{ $task }})">
+                                                            Descompartir
+                                                        </button>
+                                                        @endif
+                                                    
+                                                    @if (
+                                                        auth()->user()->id === $task->user_id ||($task->pivot && $task->pivot->permission === 'write'))
+                                                     <div >
+                                                        <button 
+                                                            class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-2 rounded" 
+                                                            wire:click="openCreateModal({{ $task }})">
+                                                            Editar
+                                                        </button>
+
+                                                        
+
+                                                        <button 
+                                                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-2 rounded"
+                                                        wire:click="openShareModal({{ $task }})">
+                                                            Compartir
+                                                        </button>
+                                                        
+                                                        <button 
+                                                            class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-2 rounded" 
+                                                            wire:click="deleteTask({{ $task }})" 
+                                                            wire:confirm="¿Estás seguro de que quieres eliminar esta tarea?">
+                                                            Eliminar
+                                                        </button>
+                                                     </div>
+                                                    @endif
+
                                     </td>
                                 </tr>
                             @endforeach
@@ -142,6 +160,49 @@
         </div>
     @endif
 
+    <!-- ====== Modal compartir -->
+
+    @if ($modalShare)
+        <div class="fixed left-0 top-0 flex h-full w-full items-center justify-center bg-black bg-opacity-50 py-10">
+                <div class="max-h-full w-full max-w-xl overflow-y-auto sm:rounded-2xl bg-white">
+                    <div class="w-full">
+                        <div class="m-8 my-20 max-w-[400px] mx-auto">
+                            <div class="mb-8">
+                                <h1 class="mb-4 text-3xl text-black font-extrabold">Compartir tarea</h1>
+                                <form>
+                                    <div class="mb-4">
+                                        <label for="name" class="block text-sm font-medium text-gray-700">Usuario a compartir</label>
+                                        <select wire:model="user_id"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option value="">Seleccione un usuario</option>
+                                            @foreach ($users as $user)
+                                                <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                    <div class="mb-4">
+                                        <label for="description" class="block text-sm font-medium text-gray-700">Permisos</label>
+                                        <select wire:model="permission"
+                                            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+                                            <option value="">Seleccione un permiso</option>
+                                            <option value="view">Ver</option>
+                                            <option value="write">Editar</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="flex flex-row">
+                                <button class="p-3 bg-black rounded-full text-white w-full font-semibold" wire:click.prevent="shareTask">
+                                Compartir tarea
+                                </button>
+                                <button class="p-3 bg-white border rounded-full w-full text-black font-semibold" wire:click.prevent="closeShareModal">Cancelar</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+    @endif
+    
 <!-- ====== Modal End -->
 </section>
-<!-- ====== Table Section End -->      
+<!-- ====== Table Section End -->

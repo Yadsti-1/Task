@@ -7,6 +7,16 @@
                         class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded my-5" wire:click="openCreateModal">
                         Nuevo
                     </button>
+                    <button
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded my-5" 
+                        wire:click="removeAllTasks" wire:confirm="¿Estás seguro de que quieres eliminar todas las tareas?">
+                        Borrar todas las tareas
+                    </button>
+                    <button
+                        class="bg-yellow-500 hover:bg-yellow-700 text-white font-bold py-2 px-4 rounded my-5" 
+                        wire:click="recoverAllTasks" wire:confirm="¿Estás seguro de que quieres restaurar todas las tareas?">
+                        Restaurar todas las tareas
+                    </button>
                     <table class="table-auto w-full">
                         <thead>
                             <tr class="bg-purple-800 text-center">

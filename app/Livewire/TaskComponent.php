@@ -6,6 +6,9 @@ use Livewire\Component;
 use App\Models\Task;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SharedTask;
+use App\Jobs\RemoveAllTasks;
 
 
 class TaskComponent extends Component
@@ -124,17 +127,33 @@ class TaskComponent extends Component
 
     public function shareTask()
     {
-        $task = Task::find($this->miTarea->id);
+        $task = Task::findOrFail($this->miTarea->id);
         $user = User::find($this->user_id);
         $user->sharedTasks()->attach($task->id, ['permission' => $this->permission]); // Attach the task to the user
         $this->closeShareModal();
         $this->tasks = $this->getTasks()->sortByDesc('id');
+        $userOrigin = Auth::user();
+        Mail::to($user->email)->queue(new SharedTask($task, $userOrigin));
     }
 
     public function unshareTask(Task $task)
     {
         $user = User::find(Auth::user()->id);
         $user->sharedTasks()->detach($task->id);
+        $this->tasks = $this->getTasks()->sortByDesc('id');
+    }
+
+    public function removeAllTasks()
+    {
+        $user = User::find(Auth::user()->id);
+        RemoveAllTasks::dispatch($user);
+        $this->tasks = $this->getTasks()->sortByDesc('id');
+    }
+
+    public function recoverAllTasks()
+    {
+        $user = User::find(Auth::user()->id);
+        $user->tasks()->restore();
         $this->tasks = $this->getTasks()->sortByDesc('id');
     }
 }

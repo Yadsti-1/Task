@@ -8,6 +8,8 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
+use App\Models\Task;
+use App\Models\User;
 
 class SharedTask extends Mailable
 {
@@ -16,7 +18,10 @@ class SharedTask extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct()
+    public function __construct(
+        public Task $task,
+        public User $user,
+    )
     {
         //
     }
@@ -27,6 +32,7 @@ class SharedTask extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
+            from: 'UWY8o@example.com',
             subject: 'Shared Task',
         );
     }
